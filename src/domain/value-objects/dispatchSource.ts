@@ -1,0 +1,5 @@
+export enum DispatchSource {
+  SYSTEM = 'SYSTEM',
+  RETRY_SERVICE = 'RETRY_SERVICE',
+  SELF_SERVICE = 'SELF_SERVICE',
+}
