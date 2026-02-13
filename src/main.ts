@@ -88,11 +88,11 @@ async function bootstrap() {
   // ------------------------------------------------------------------
 
   app.listen(PORT, () => {
-    console.log(`🚀 Self-service API running on port ${PORT}`);
+    console.log(`Self-service API running on port ${PORT}`);
   });
 }
 
 bootstrap().catch(err => {
-  console.error('❌ Failed to start self-service', err);
+  console.error('Failed to start self-service', err);
   process.exit(1);
 });
