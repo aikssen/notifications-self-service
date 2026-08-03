@@ -1,4 +1,7 @@
-import { NotificationEventRepository } from '@/domain/repositories/notificationEventRepository';
+import {
+  NotificationEventFilters,
+  NotificationEventRepository,
+} from '@/domain/repositories/notificationEventRepository';
 import { NotificationEvent } from '@/domain/entities/notificationEvent';
 
 export class ListNotificationEvents {
@@ -6,7 +9,10 @@ export class ListNotificationEvents {
     private readonly repository: NotificationEventRepository
   ) {}
 
-  async execute(clientId: string): Promise<NotificationEvent[]> {
-    return this.repository.findAllByClient(clientId);
+  async execute(
+    clientId: string,
+    filters: NotificationEventFilters = {}
+  ): Promise<NotificationEvent[]> {
+    return this.repository.findAllByClient(clientId, filters);
   }
 }

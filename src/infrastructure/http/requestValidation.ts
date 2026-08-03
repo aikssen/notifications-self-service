@@ -4,3 +4,7 @@ const UUID_PATTERN =
 export function isUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID_PATTERN.test(value);
 }
+
+export function isDate(value: unknown): value is string {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}

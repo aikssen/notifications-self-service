@@ -38,7 +38,17 @@ This service is responsible for:
 
 ### GET /notification_events
 
-Returns all notification events for the authenticated client.
+Returns notification events for a client. Optional filters are inclusive:
+
+- `created_from`: minimum event creation date.
+- `created_to`: maximum event creation date.
+- `delivery_status`: `PENDING`, `DELIVERED`, `FAILED` or `RETRYING`.
+
+Example:
+
+```text
+GET /notification_events?client_id=<uuid>&created_from=2026-08-01T00:00:00Z&created_to=2026-08-03T23:59:59Z&delivery_status=FAILED
+```
 
 ---
 

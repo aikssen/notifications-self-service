@@ -3,6 +3,37 @@ import test from 'node:test';
 import type { Pool } from 'pg';
 
 import { PostgresNotificationEventRepository } from '@/infrastructure/db/postgres/postgresNotificationEventRepository';
+import { NotificationEventState } from '@/domain/value-objects/notificationEventState';
+
+test('applies creation date and delivery status filters', async () => {
+  const queries: Array<{ text: string; values: unknown[] }> = [];
+  const pool = {
+    query: async (text: string, values: unknown[]) => {
+      queries.push({ text, values });
+      return { rowCount: 0, rows: [] };
+    },
+  } as unknown as Pool;
+  const repository = new PostgresNotificationEventRepository(pool);
+
+  await repository.findAllByClient(
+    'd11a7925-0287-4495-9876-5b3d02056141',
+    {
+      createdFrom: '2026-08-01T00:00:00Z',
+      createdTo: '2026-08-03T23:59:59Z',
+      deliveryStatus: NotificationEventState.FAILED,
+    }
+  );
+
+  assert.match(queries[0].text, /created_at >= \$2/);
+  assert.match(queries[0].text, /created_at <= \$3/);
+  assert.match(queries[0].text, /state = \$4/);
+  assert.deepEqual(queries[0].values, [
+    'd11a7925-0287-4495-9876-5b3d02056141',
+    '2026-08-01T00:00:00Z',
+    '2026-08-03T23:59:59Z',
+    NotificationEventState.FAILED,
+  ]);
+});
 
 test('maps snake_case attempt columns returned by PostgreSQL', async () => {
   const attemptedAt = new Date('2026-08-03T12:00:00.000Z');

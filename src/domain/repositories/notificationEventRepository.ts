@@ -2,6 +2,12 @@ import { NotificationEventState } from '@/domain/value-objects/notificationEvent
 import { NotificationEvent } from '@/domain/entities/notificationEvent';
 import { NotificationAttempt } from '@/domain/entities/notificationAttempt';
 
+export interface NotificationEventFilters {
+  createdFrom?: string;
+  createdTo?: string;
+  deliveryStatus?: NotificationEventState;
+}
+
 export interface NotificationEventRepository {
   findById(
     id: string,
@@ -16,5 +22,8 @@ export interface NotificationEventRepository {
     state: NotificationEventState
   ): Promise<void>;
 
-  findAllByClient(clientId: string): Promise<NotificationEvent[]>;
+  findAllByClient(
+    clientId: string,
+    filters?: NotificationEventFilters
+  ): Promise<NotificationEvent[]>;
 }

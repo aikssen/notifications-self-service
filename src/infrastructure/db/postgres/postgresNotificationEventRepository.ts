@@ -1,6 +1,9 @@
 import { Pool } from 'pg';
 
-import { NotificationEventRepository } from '@/domain/repositories/notificationEventRepository';
+import {
+    NotificationEventFilters,
+    NotificationEventRepository,
+} from '@/domain/repositories/notificationEventRepository';
 import { NotificationEvent } from '@/domain/entities/notificationEvent';
 import { NotificationAttempt } from '@/domain/entities/notificationAttempt';
 import { NotificationEventState } from '@/domain/value-objects/notificationEventState';
@@ -10,7 +13,10 @@ export class PostgresNotificationEventRepository
 
     constructor(private readonly pool: Pool) { }
 
-    async findAllByClient(clientId: string): Promise<NotificationEvent[]> {
+    async findAllByClient(
+        clientId: string,
+        filters: NotificationEventFilters = {}
+    ): Promise<NotificationEvent[]> {
         const result = await this.pool.query(
             `
     SELECT
@@ -24,9 +30,17 @@ export class PostgresNotificationEventRepository
       updated_at
     FROM notification_events
     WHERE client_id = $1
+      AND ($2::timestamptz IS NULL OR created_at >= $2)
+      AND ($3::timestamptz IS NULL OR created_at <= $3)
+      AND ($4::text IS NULL OR state = $4)
     ORDER BY created_at DESC
     `,
-            [clientId]
+            [
+                clientId,
+                filters.createdFrom ?? null,
+                filters.createdTo ?? null,
+                filters.deliveryStatus ?? null,
+            ]
         );
 
         return result.rows.map(row =>

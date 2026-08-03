@@ -87,9 +87,55 @@ async function bootstrap() {
   // Start server
   // ------------------------------------------------------------------
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Self-service API running on port ${PORT}`);
   });
+
+  let shuttingDown = false;
+
+  async function shutdown(signal: NodeJS.Signals): Promise<void> {
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    console.log(`Received ${signal}, shutting down self-service`);
+
+    let exitCode = 0;
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        server.close(error => error ? reject(error) : resolve());
+      });
+    } catch (error) {
+      exitCode = 1;
+      console.error('Failed to close HTTP server', error);
+    }
+
+    try {
+      await producer.disconnect();
+    } catch (error) {
+      exitCode = 1;
+      console.error('Failed to disconnect Kafka producer', error);
+    }
+
+    try {
+      await postgresPool.end();
+    } catch (error) {
+      exitCode = 1;
+      console.error('Failed to close PostgreSQL pool', error);
+    }
+
+    if (exitCode === 0) {
+      console.log('Self-service stopped');
+    }
+
+    process.exitCode = exitCode;
+  }
+
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.once(signal, () => {
+      void shutdown(signal);
+    });
+  }
 }
 
 bootstrap().catch(err => {
