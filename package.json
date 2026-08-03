@@ -7,7 +7,7 @@
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test -r ts-node/register/transpile-only -r tsconfig-paths/register test/*.test.ts"
   },
   "keywords": [],
   "author": "",

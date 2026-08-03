@@ -25,18 +25,12 @@ export class ReplayNotificationEvent {
 
     const { event } = result;
 
-    console.log('notificationEvent found', {event})
-
     if (event.clientId !== command.clientId) {
       throw new Error('Event does not belong to client');
     }
 
-    if (event.state == NotificationEventState.FAILED) {
-      throw new Error('Event cannot be replayed, already failed completely, a new event must be generated');
-    }
-
-    if (event.state == NotificationEventState.DELIVERED) {
-      throw new Error('Event cannot be replayed, already delivered');
+    if (event.state !== NotificationEventState.FAILED) {
+      throw new Error('Only failed events can be replayed');
     }
 
     await this.eventRepository.updateState(
