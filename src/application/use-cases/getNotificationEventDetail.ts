@@ -13,8 +13,9 @@ export class GetNotificationEventDetail {
   ) {}
 
   async execute(
-    notificationEventId: string
+    notificationEventId: string,
+    clientId: string
   ): Promise<NotificationEventDetail | null> {
-    return this.repository.findById(notificationEventId);
+    return this.repository.findById(notificationEventId, clientId);
   }
 }

@@ -16,7 +16,8 @@ export class ReplayNotificationEvent {
 
   async execute(command: ReplayNotificationEventCommand) {
     const result = await this.eventRepository.findById(
-      command.notificationEventId
+      command.notificationEventId,
+      command.clientId
     );
 
     if (!result) {

@@ -4,7 +4,8 @@ import { NotificationAttempt } from '@/domain/entities/notificationAttempt';
 
 export interface NotificationEventRepository {
   findById(
-    id: string
+    id: string,
+    clientId: string
   ): Promise<{
     event: NotificationEvent;
     attempts: NotificationAttempt[];

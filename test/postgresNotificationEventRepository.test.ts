@@ -40,16 +40,26 @@ test('maps snake_case attempt columns returned by PostgreSQL', async () => {
       ],
     },
   ];
+  const queries: Array<{ text: string; values: unknown[] }> = [];
   const pool = {
-    query: async () => queryResults.shift(),
+    query: async (text: string, values: unknown[]) => {
+      queries.push({ text, values });
+      return queryResults.shift();
+    },
   } as unknown as Pool;
   const repository = new PostgresNotificationEventRepository(pool);
 
   const result = await repository.findById(
-    '8d72a2c3-a17a-453c-bdee-4b4cc8746974'
+    '8d72a2c3-a17a-453c-bdee-4b4cc8746974',
+    'd11a7925-0287-4495-9876-5b3d02056141'
   );
 
   assert.ok(result);
+  assert.match(queries[0].text, /WHERE id = \$1 AND client_id = \$2/);
+  assert.deepEqual(queries[0].values, [
+    '8d72a2c3-a17a-453c-bdee-4b4cc8746974',
+    'd11a7925-0287-4495-9876-5b3d02056141',
+  ]);
   assert.equal(result.attempts.length, 1);
   assert.equal(result.attempts[0].webhookUrl, 'https://example.com/webhook');
   assert.equal(result.attempts[0].requestMethod, 'POST');

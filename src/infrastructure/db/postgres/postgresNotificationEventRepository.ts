@@ -44,16 +44,17 @@ export class PostgresNotificationEventRepository
     }
 
     async findById(
-        notificationEventId: string
+        notificationEventId: string,
+        clientId: string
     ): Promise<{ event: NotificationEvent; attempts: NotificationAttempt[] } | null> {
 
         const eventResult = await this.pool.query(
             `
       SELECT *
       FROM notification_events
-      WHERE id = $1
+      WHERE id = $1 AND client_id = $2
       `,
-            [notificationEventId]
+            [notificationEventId, clientId]
         );
 
         if (eventResult.rowCount === 0) {

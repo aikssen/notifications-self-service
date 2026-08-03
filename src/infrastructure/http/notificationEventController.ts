@@ -34,6 +34,7 @@ export function notificationEventController(
         async (req: Request, res: Response) => {
 
             const rawId = req.params.notification_event_id;
+            const clientId = req.query.client_id as string;
 
             if (!rawId || Array.isArray(rawId)) {
                 return res.status(400).json({
@@ -41,8 +42,14 @@ export function notificationEventController(
                 });
             }
 
+            if (!clientId) {
+                return res.status(400).json({
+                    error: 'client_id is required',
+                });
+            }
+
             const result =
-                await getNotificationEventDetail.execute(rawId);
+                await getNotificationEventDetail.execute(rawId, clientId);
 
             if (!result) {
                 return res.status(404).json({

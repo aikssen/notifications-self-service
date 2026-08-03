@@ -42,9 +42,9 @@ Returns all notification events for the authenticated client.
 
 ---
 
-### GET /notification_events/{notification_event_id}
+### GET /notification_events/{notification_event_id}?client_id={client_id}
 
-Returns detailed information about a notification event, including all delivery attempts.
+Returns detailed information, including all delivery attempts, only when the event belongs to the requested client.
 
 ---
 
