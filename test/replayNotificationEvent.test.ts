@@ -8,7 +8,10 @@ import { NotificationEventState } from '@/domain/value-objects/notificationEvent
 
 const clientId = 'd11a7925-0287-4495-9876-5b3d02056141';
 
-function createUseCase(state: NotificationEventState) {
+function createUseCase(
+  state: NotificationEventState,
+  publishError?: Error
+) {
   const event = new NotificationEvent(
     '8d72a2c3-a17a-453c-bdee-4b4cc8746974',
     '593bb5af-6ffd-4b09-a61d-456835235ed8',
@@ -32,6 +35,7 @@ function createUseCase(state: NotificationEventState) {
 
   const useCase = new ReplayNotificationEvent(eventRepository, {
     publish: async publishedEvent => {
+      if (publishError) throw publishError;
       publishedEvents.push(publishedEvent);
     },
   });
@@ -52,6 +56,25 @@ test('schedules replay when the event is FAILED', async () => {
   assert.equal(result.state, NotificationEventState.RETRYING);
   assert.deepEqual(stateUpdates, [NotificationEventState.RETRYING]);
   assert.equal(publishedEvents.length, 1);
+});
+
+test('restores FAILED when Kafka publication fails', async () => {
+  const publishError = new Error('Kafka unavailable');
+  const { event, useCase, stateUpdates, publishedEvents } = createUseCase(
+    NotificationEventState.FAILED,
+    publishError
+  );
+
+  await assert.rejects(
+    useCase.execute({ notificationEventId: event.id, clientId }),
+    error => error === publishError
+  );
+
+  assert.deepEqual(stateUpdates, [
+    NotificationEventState.RETRYING,
+    NotificationEventState.FAILED,
+  ]);
+  assert.equal(publishedEvents.length, 0);
 });
 
 for (const state of [

@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 
 import { ListNotificationEvents } from '@/application/use-cases/listNotificationEvents';
 import { GetNotificationEventDetail } from '@/application/use-cases/getNotificationEventDetail';
+import { isUuid } from '@/infrastructure/http/requestValidation';
 
 export function notificationEventController(
     listNotificationEvents: ListNotificationEvents,
@@ -14,11 +15,11 @@ export function notificationEventController(
      * GET /notification_events?client_id=uuid
      */
     router.get('/notification_events', async (req: Request, res: Response) => {
-        const clientId = req.query.client_id as string;
+        const clientId = req.query.client_id;
 
-        if (!clientId) {
+        if (!isUuid(clientId)) {
             return res.status(400).json({
-                error: 'client_id is required',
+                error: 'client_id must be a valid UUID',
             });
         }
 
@@ -34,17 +35,17 @@ export function notificationEventController(
         async (req: Request, res: Response) => {
 
             const rawId = req.params.notification_event_id;
-            const clientId = req.query.client_id as string;
+            const clientId = req.query.client_id;
 
-            if (!rawId || Array.isArray(rawId)) {
+            if (!isUuid(rawId)) {
                 return res.status(400).json({
-                    error: 'Invalid notification_event_id',
+                    error: 'notification_event_id must be a valid UUID',
                 });
             }
 
-            if (!clientId) {
+            if (!isUuid(clientId)) {
                 return res.status(400).json({
-                    error: 'client_id is required',
+                    error: 'client_id must be a valid UUID',
                 });
             }
 

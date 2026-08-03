@@ -39,14 +39,22 @@ export class ReplayNotificationEvent {
       NotificationEventState.RETRYING
     );
 
-    await this.kafkaProducer.publish({
-      event_id: event.eventId,
-      client_id: event.clientId,
-      event_type: event.eventType,
-      event_payload: event.eventPayload,
-      dispatch_source: DispatchSource.SELF_SERVICE,
-      timestamp: new Date().toISOString(),
-    });
+    try {
+      await this.kafkaProducer.publish({
+        event_id: event.eventId,
+        client_id: event.clientId,
+        event_type: event.eventType,
+        event_payload: event.eventPayload,
+        dispatch_source: DispatchSource.SELF_SERVICE,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      await this.eventRepository.updateState(
+        event.id,
+        NotificationEventState.FAILED
+      );
+      throw error;
+    }
 
     return {
       notification_event_id: event.id,
